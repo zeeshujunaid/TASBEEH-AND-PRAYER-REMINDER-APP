@@ -153,11 +153,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: "#fff",
     alignItems: "center",
-    elevation: 4,
+    elevation: 5,
   },
   logo: {
     width: 130,
-    height: 50,
+    height: 120,
     resizeMode: "contain",
     marginBottom: 15,
   },
