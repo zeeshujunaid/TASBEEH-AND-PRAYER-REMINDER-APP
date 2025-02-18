@@ -35,7 +35,8 @@ export default function Loginscreen() {
                     await AsyncStorage.setItem("info", JSON.stringify(user.uid));
                     setEmail("");
                     setPassword("");
-                    router.push("/(tabs)");
+                    router.push("/(tabs)/home");
+                    setLoading(false);
                 })
                 .catch((error) => {
                     setLoading(false);
