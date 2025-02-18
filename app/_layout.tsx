@@ -18,6 +18,7 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)/tasbeeh" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)/singup" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)/api" options={{ headerShown: false }} />
         </Stack>
 
         {/* Toast Component */}
