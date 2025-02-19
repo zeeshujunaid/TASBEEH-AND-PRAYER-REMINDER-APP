@@ -3,6 +3,7 @@ import { Text, View, TouchableOpacity, StyleSheet, ActivityIndicator } from "rea
 import { useRouter } from "expo-router";
 import * as Location from "expo-location";
 import MapView, { Marker } from "react-native-maps";
+import Header from "../../compnents/Header";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function HomeScreen() {
@@ -82,12 +83,14 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>HOME SCREEN</Text>
+      <Header />
+
 
       {loading ? (
         <ActivityIndicator size="large" color="#FFA500" />
       ) : permissionDenied ? (
         <View>
-          <Text style={styles.text}>Location permission is required to show the map.</Text>
+          <Text style={styles.text}>Location permission is required to show the map and get the namaz timeming .</Text>
           <TouchableOpacity style={styles.permissionButton} onPress={getLocation}>
             <Text style={styles.buttonText}>Allow Location</Text>
           </TouchableOpacity>
@@ -107,6 +110,10 @@ export default function HomeScreen() {
             <Marker coordinate={{ latitude: location.latitude, longitude: location.longitude }} title="You are here" />
           </MapView>
 
+          <TouchableOpacity style={styles.button} onPress={getLocation}>
+        <Text style={styles.buttonText}>Refresh Location</Text>
+      </TouchableOpacity>
+
           {prayerTimes && (
             <View style={styles.prayerContainer}>
               <Text style={styles.prayerTitle}>Today's Prayer Times</Text>
@@ -121,10 +128,6 @@ export default function HomeScreen() {
       ) : (
         <Text style={styles.text}>Unable to fetch location</Text>
       )}
-
-      <TouchableOpacity style={styles.button} onPress={getLocation}>
-        <Text style={styles.buttonText}>Refresh Location</Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -134,6 +137,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#F1C40F ",
     padding: 20,
   },
   title: {
