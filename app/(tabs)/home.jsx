@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { Text, View, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
+import { Text, View, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import * as Location from "expo-location";
 import MapView, { Marker } from "react-native-maps";
 import Header from "../../compnents/Header";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { FontAwesome } from "@expo/vector-icons";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -12,8 +13,8 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [prayerTimes, setPrayerTimes] = useState(null);
+  const [updatingTimings, setUpdatingTimings] = useState(false);
 
-  // 🔹 Location Fetch & Save to AsyncStorage
   const getLocation = async () => {
     setLoading(true);
     let { status } = await Location.requestForegroundPermissionsAsync();
@@ -32,7 +33,6 @@ export default function HomeScreen() {
     fetchPrayerTimes(loc.coords.latitude, loc.coords.longitude);
   };
 
-  // 🔹 Load Stored Location & Fetch Timings
   const loadStoredLocation = async () => {
     const storedLocation = await AsyncStorage.getItem("userLocation");
     if (storedLocation) {
@@ -45,19 +45,18 @@ export default function HomeScreen() {
   const convertTo12HourFormat = (time) => {
     let [hours, minutes] = time.split(":");
     let suffix = hours >= 12 ? "PM" : "AM";
-    hours = ((hours % 12) || 12).toString(); // Convert to 12-hour format (handle 0 as 12)
+    hours = ((hours % 12) || 12).toString();
     return `${hours}:${minutes} ${suffix}`;
   };
-  
-  // 🔹 Fetch Namaz Timings API
+
   const fetchPrayerTimes = async (latitude, longitude) => {
+    setUpdatingTimings(true);
     try {
       const response = await fetch(
         `https://api.aladhan.com/v1/timings?latitude=${latitude}&longitude=${longitude}&method=2`
       );
       const data = await response.json();
-  
-      // ✅ Convert 24-hour to 12-hour format
+
       const requiredTimings = {
         Fajr: convertTo12HourFormat(data.data.timings.Fajr),
         Dhuhr: convertTo12HourFormat(data.data.timings.Dhuhr),
@@ -65,69 +64,83 @@ export default function HomeScreen() {
         Maghrib: convertTo12HourFormat(data.data.timings.Maghrib),
         Isha: convertTo12HourFormat(data.data.timings.Isha),
       };
-  
+
       setPrayerTimes(requiredTimings);
     } catch (error) {
       console.error("Error fetching prayer times:", error);
     }
+    setUpdatingTimings(false);
   };
-  // 🔹 Fetch on App Open
+
   useEffect(() => {
-    const fetchLocationOnAppOpen = async () => {
-      await loadStoredLocation();
-      await getLocation();
-    };
-    fetchLocationOnAppOpen();
+    loadStoredLocation();
   }, []);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>HOME SCREEN</Text>
       <Header />
 
-
-      {loading ? (
-        <ActivityIndicator size="large" color="#FFA500" />
-      ) : permissionDenied ? (
-        <View>
-          <Text style={styles.text}>Location permission is required to show the map and get the namaz timeming .</Text>
-          <TouchableOpacity style={styles.permissionButton} onPress={getLocation}>
-            <Text style={styles.buttonText}>Allow Location</Text>
-          </TouchableOpacity>
-        </View>
-      ) : location ? (
-        <View>
-          <Text style={styles.text}>Your Location:</Text>
-          <MapView
-            style={styles.map}
-            region={{
-              latitude: location.latitude,
-              longitude: location.longitude,
-              latitudeDelta: 0.02,
-              longitudeDelta: 0.02,
-            }}
-          >
-            <Marker coordinate={{ latitude: location.latitude, longitude: location.longitude }} title="You are here" />
-          </MapView>
-
-          <TouchableOpacity style={styles.button} onPress={getLocation}>
-        <Text style={styles.buttonText}>Refresh Location</Text>
-      </TouchableOpacity>
-
-          {prayerTimes && (
-            <View style={styles.prayerContainer}>
-              <Text style={styles.prayerTitle}>Today's Prayer Times</Text>
-              {Object.entries(prayerTimes).map(([name, time]) => (
-                <Text key={name} style={styles.prayerText}>
-                  {name}: {time}
-                </Text>
-              ))}
+      <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+      <View style={styles.prayerContainer}>
+  <Text style={styles.prayerTitle}>YOUR LOCATION</Text>
+  </View>
+         {/* Location Section with Background Map */}
+         <View style={styles.mapContainer}>
+          {loading ? (
+            <ActivityIndicator size="large" color="#FFA500" />
+          ) : permissionDenied ? (
+            <View>
+              <Text style={styles.text}>
+                Location permission is required to show the map and get the namaz timings.
+              </Text>
+              <TouchableOpacity style={styles.permissionButton} onPress={getLocation}>
+                <Text style={styles.buttonText}>Allow Location</Text>
+              </TouchableOpacity>
             </View>
+          ) : (
+            <>
+              <MapView
+                style={styles.map}
+                region={{
+                  latitude: location?.latitude || 0,
+                  longitude: location?.longitude || 0,
+                  latitudeDelta: 0.02,
+                  longitudeDelta: 0.02,
+                }}
+              >
+                {location && (
+                  <Marker
+                    coordinate={{ latitude: location.latitude, longitude: location.longitude }}
+                    title="You are here"
+                  />
+                )}
+              </MapView>
+
+              {/* Refresh Icon */}
+              <TouchableOpacity style={styles.refreshIcon} onPress={getLocation}>
+                <FontAwesome name="refresh" size={24} color="#FFF" />
+              </TouchableOpacity>
+            </>
           )}
         </View>
-      ) : (
-        <Text style={styles.text}>Unable to fetch location</Text>
-      )}
+
+        <View style={styles.prayerContainer}>
+  <Text style={styles.prayerTitle}>Today's Prayer Times</Text>
+  {updatingTimings ? (
+    <ActivityIndicator size="small" color="#FFA500" />
+  ) : (
+    Object.entries(prayerTimes || {}).map(([name, time]) => (
+      <View key={name} style={styles.prayerWrapper}>
+        <View style={styles.prayerItem}>
+          <Text style={styles.prayerText}>{name}</Text>
+          <Text style={styles.prayerTime}>{time}</Text>
+        </View>
+      </View>
+    ))
+  )}
+</View>
+
+      </ScrollView>
     </View>
   );
 }
@@ -135,49 +148,83 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
+    // backgroundColor: "#F5F5DC",
+    backgroundColor: "#F3FFF3",
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    paddingBottom: 90,
+  },
+  mapContainer: {
+    position: "relative",
+    height: 150,
+    width: "90%",
+    paddingLeft: 5,
+    alignSelf: "center",
     alignItems: "center",
-    backgroundColor: "#F1C40F ",
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-  text: {
-    fontSize: 16,
-    marginBottom: 10,
-    textAlign: "center",
+    justifyContent: "center",
   },
   map: {
-    width: 300,
-    height: 200,
+    width: "100%",
+    height: "100%",
+    position: "absolute",
+    top: 0,
+    left: 0,
+  },
+  locationOverlay: {
+    position: "absolute",
+    top: 20,
+    alignSelf: "center",
+    paddingHorizontal: 15,
+    paddingVertical: 8,
     borderRadius: 10,
-    marginTop: 10,
+  },
+  locationText: {
+    fontSize: 22,
+    fontWeight: "bold",
+    fontFamily: "sans-serif-medium",
+    color: "#000",
+    textAlign: "center",
+  },
+  refreshIcon: {
+    position: "absolute",
+    bottom: 10,
+    height:45,
+    width:40,
+    right: 10,
+    backgroundColor: "#000",
+    padding: 10,
+    borderRadius: 30,
+    elevation: 5,
   },
   prayerContainer: {
-    marginTop: 20,
-    padding: 15,
-    backgroundColor: "#f5f5f5",
-    borderRadius: 10,
+    padding: 16,
+    // backgroundColor: '#fff',
   },
   prayerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 22,
+    fontWeight: 'bold',
     marginBottom: 10,
-    textAlign: "center",
+  },
+  prayerWrapper: {
+    marginBottom: 10, // Har namaz ko alag space dena
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    padding: 10,
+    elevation: 2, // Shadow effect for better UI
+  },
+  prayerItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   prayerText: {
-    fontSize: 16,
-    textAlign: "center",
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#FFA500',
   },
-  button: {
-    backgroundColor: "#FFA500",
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 30,
-    marginTop: 20,
+  prayerTime: {
+    fontSize: 18,
+    color: '#FFA500',
   },
   permissionButton: {
     backgroundColor: "#ff4500",
@@ -185,10 +232,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
     borderRadius: 30,
     marginTop: 20,
+    alignSelf: "center",
   },
   buttonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+    textAlign: "center",
   },
 });

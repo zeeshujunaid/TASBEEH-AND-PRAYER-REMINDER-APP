@@ -40,7 +40,7 @@ export default function Index() {
           📌 Chaliye, ibadat ka safar shuru karein!
         </Text>
 
-        <TouchableOpacity style={styles.button} onPress={() => router.push("/(auth)/login")}>
+        <TouchableOpacity style={styles.button} onPress={() => router.push("/(tabs)/home")}>
           <Text style={styles.buttonText}>Get Started</Text>
         </TouchableOpacity>
 

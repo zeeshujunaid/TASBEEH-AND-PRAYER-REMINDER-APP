@@ -47,12 +47,15 @@ export default function Header() {
     fetchUserInfo();
   }, []);
 
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerContainer}>
-        <Text style={styles.nameText}>Hi, {userName || "User"}</Text>
+        <Text style={styles.nameText}>
+          ✨ Assalamu Alaikum {userName.length > 7 ? userName.slice(0, 7) + ".." : userName || "JANAB"} ✨
+        </Text>
         <Text style={styles.subtitleText}>
-          Welcome Back! Let's Start Practicing!
+          KHUSH AMDEED!
         </Text>
       </View>
     </SafeAreaView>
@@ -60,14 +63,24 @@ export default function Header() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: "#fff", 
-    paddingTop: 40, // Adjust for status bar
-    paddingBottom: 10, 
-  },
+    container: {
+      // backgroundColor: "#F5F5DC", // Header Background Color
+      backgroundColor: "#F3FFF3", // Header Background Color
+      paddingBottom: 2,
+      height: 85,
+      borderBottomRightRadius: 20,
+      borderBottomLeftRadius: 20,
+      elevation: 5,  
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      shadowRadius: 5,
+    },
   headerContainer: {
     paddingHorizontal: 16,
     paddingVertical: 20,
+    justifyContent: "center",
+    alignItems: "center",
   },
   nameText: {
     fontSize: 20,
