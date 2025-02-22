@@ -52,7 +52,7 @@ export default function Header() {
     <SafeAreaView style={styles.container}>
       <View style={styles.headerContainer}>
         <Text style={styles.nameText}>
-          ✨ Assalamu Alaikum {userName.length > 7 ? userName.slice(0, 7) + ".." : userName || "JANAB"} ✨
+          ✨ Assalamu Alaikum {(userName?.length > 7 ? userName.slice(0, 7) + ".." : userName) || "JANAB"} ✨
         </Text>
         <Text style={styles.subtitleText}>
           KHUSH AMDEED!

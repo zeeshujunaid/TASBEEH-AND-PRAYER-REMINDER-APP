@@ -14,7 +14,6 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/applogo.jpg",
-        "backgroundColor": "#F5F3E0",
         "imageWidth": 400,
         "resizeMode": "contain"
       }
@@ -31,8 +30,7 @@
         {
           "image": "./assets/images/applogo.jpg",
           "imageWidth": 400,
-          "resizeMode": "contain",
-          "backgroundColor": "#F5F3E0"
+          "resizeMode": "contain"
         }
       ]
     ],
